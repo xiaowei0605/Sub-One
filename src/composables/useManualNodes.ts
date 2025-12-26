@@ -15,7 +15,7 @@
 import { ref, computed, watch, type Ref } from 'vue';
 import { debounce } from 'lodash-es';
 import { useToastStore } from '../stores/toast';
-import { COUNTRY_CODE_MAP, REGION_KEYWORDS, REGION_ORDER } from '../lib/constants';
+import { getCountryTerms, REGION_KEYWORDS, REGION_ORDER } from '../lib/constants';
 import type { Node } from '../types';
 
 /**
@@ -97,8 +97,8 @@ export function useManualNodes(initialNodesRef: Ref<Node[] | null>) {
    * 
    * 说明：
    * - 根据防抖后的搜索词过滤节点
-   * - 支持国家代码映射（如输入 'hk' 可以搜索到香港节点）
-   * - 支持多种地区名称别名
+   * - 支持智能国家/地区搜索（输入任何相关词汇都能匹配）
+   * - 支持多种地区名称别名（中文、繁体、emoji、国家代码等）
    */
   const filteredManualNodes = computed(() => {
     // 如果没有搜索词，返回所有节点
@@ -109,9 +109,9 @@ export function useManualNodes(initialNodesRef: Ref<Node[] | null>) {
     // 转换为小写进行不区分大小写的搜索
     const lowerCaseSearch = debouncedSearchTerm.value.toLowerCase();
 
-    // 获取可能的替代搜索词（从国家代码映射表）
-    // 例如：输入 'hk' 可以匹配 ['🇭🇰', '香港']
-    const alternativeTerms = COUNTRY_CODE_MAP[lowerCaseSearch] || [];
+    // 使用 getCountryTerms 获取所有相关的国家/地区词汇
+    // 例如：输入 '美国' 可以匹配 ['🇺🇸', '美国', '美國', 'us']
+    const alternativeTerms = getCountryTerms(lowerCaseSearch);
 
     // 过滤节点
     return manualNodes.value.filter(node => {
@@ -122,7 +122,7 @@ export function useManualNodes(initialNodesRef: Ref<Node[] | null>) {
         return true;
       }
 
-      // 检查节点名称是否包含任何替代词
+      // 检查节点名称是否包含任何国家/地区相关词汇
       for (const altTerm of alternativeTerms) {
         if (nodeNameLower.includes(altTerm.toLowerCase())) {
           return true;

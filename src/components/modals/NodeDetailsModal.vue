@@ -21,7 +21,7 @@ import { ref, computed, watch } from 'vue';
 import { useToastStore } from '../../stores/toast';
 import { subscriptionParser } from '@shared/subscription-parser';
 import type { Subscription, Profile, Node } from '../../types';
-import { COUNTRY_CODE_MAP } from '../../lib/constants';
+import { getCountryTerms } from '../../lib/constants';
 
 const props = defineProps<{
   show: boolean;
@@ -70,12 +70,12 @@ watch(() => props.show, async (newVal) => {
   }
 });
 
-// 过滤后的节点列表（支持国家/地区别名搜索）
+// 过滤后的节点列表（支持国家/地区别名智能搜索）
 const filteredNodes = computed(() => {
   if (!searchTerm.value) return nodes.value;
   const term = searchTerm.value.toLowerCase();
-  // 获取搜索词对应的国家/地区别名
-  const alternativeTerms = COUNTRY_CODE_MAP[term] || [];
+  // 使用 getCountryTerms 获取所有相关的国家/地区词汇
+  const alternativeTerms = getCountryTerms(term);
 
   return nodes.value.filter(node => {
     const nodeName = node.name.toLowerCase();
@@ -86,7 +86,7 @@ const filteredNodes = computed(() => {
       return true;
     }
 
-    // 高级匹配：节点名称或 URL 包含任一别名
+    // 高级匹配：节点名称或 URL 包含任一国家/地区相关词汇
     for (const altTerm of alternativeTerms) {
       const altTermLower = altTerm.toLowerCase();
       if (nodeName.includes(altTermLower) || nodeUrl.includes(altTermLower)) {

@@ -20,7 +20,7 @@
 import { ref, watch, computed } from 'vue';
 import Modal from './BaseModal.vue';
 import type { Profile, Subscription, Node } from '../../types';
-import { COUNTRY_CODE_MAP } from '../../lib/constants';
+import { getCountryTerms } from '../../lib/constants';
 
 const props = withDefaults(defineProps<{
   show: boolean;
@@ -64,7 +64,8 @@ const filteredSubscriptions = computed(() => {
     return candidates;
   }
   const lowerCaseSearchTerm = subscriptionSearchTerm.value.toLowerCase();
-  const alternativeTerms = COUNTRY_CODE_MAP[lowerCaseSearchTerm] || [];
+  // 使用 getCountryTerms 获取所有相关的国家/地区词汇
+  const alternativeTerms = getCountryTerms(lowerCaseSearchTerm);
 
   return candidates.filter(sub => {
     const subNameLower = sub.name ? sub.name.toLowerCase() : '';
@@ -87,7 +88,8 @@ const filteredManualNodes = computed(() => {
     return props.allManualNodes;
   }
   const lowerCaseSearchTerm = nodeSearchTerm.value.toLowerCase();
-  const alternativeTerms = COUNTRY_CODE_MAP[lowerCaseSearchTerm] || [];
+  // 使用 getCountryTerms 获取所有相关的国家/地区词汇
+  const alternativeTerms = getCountryTerms(lowerCaseSearchTerm);
 
   return props.allManualNodes.filter(node => {
     const nodeNameLower = node.name ? node.name.toLowerCase() : '';
