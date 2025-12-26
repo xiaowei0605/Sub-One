@@ -1,3 +1,22 @@
+<!--
+  ==================== 系统设置模态框 ====================
+  
+  功能说明：
+  - 管理应用的全局配置
+  - 包括基础配置、订阅组、SubConverter、Telegram通知等设置
+  - 提供预设选项和自定义输入
+  - 自动加载和保存配置
+  - 输入验证（空格检测）
+  
+  配置项：
+  - 基础配置：订阅文件名、订阅Token
+  - 订阅组：分享Token、节点名前缀设置
+  - SubConverter：后端地址、配置文件URL
+  - Telegram：Bot Token、Chat ID
+  
+  ==================================================
+-->
+
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import Modal from './BaseModal.vue';
@@ -63,7 +82,7 @@ const loadSettings = async () => {
         // 只要后端返回了值（包括空字符串），就使用后端的值
         // 这样用户可以主动清空某些配置（如 profileToken）
         if (loaded[key as keyof AppConfig] !== undefined && loaded[key as keyof AppConfig] !== null) {
-          (settings.value as any)[key] = loaded[key as keyof AppConfig];
+          settings.value[key as keyof AppConfig] = loaded[key as keyof AppConfig];
         }
       }
     }
@@ -95,8 +114,9 @@ const handleSave = async () => {
     } else {
       throw new Error(result.message || '保存失败');
     }
-  } catch (error: any) {
-    showToast(error.message, 'error');
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    showToast(msg, 'error');
     isSaving.value = false; // 只有失败时才需要重置保存状态
   }
 };

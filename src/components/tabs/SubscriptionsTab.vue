@@ -21,7 +21,7 @@ const emit = defineEmits<{
   (e: 'save-sort'): void;
   (e: 'toggle-sort'): void;
   (e: 'delete-all-subs'): void;
-  (e: 'drag-end', evt: any): void;
+  (e: 'drag-end', evt: unknown): void;
   (e: 'delete-sub', id: string): void;
   (e: 'toggle-sub', sub: Subscription): void;
   (e: 'update-sub', id: string): void;
@@ -113,7 +113,7 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-const handleDragEnd = (evt: any) => {
+const handleDragEnd = (evt: unknown) => {
   emit('drag-end', evt);
 };
 </script>
@@ -217,11 +217,11 @@ const handleDragEnd = (evt: any) => {
             <button @click="deleteSelected" :disabled="selectedCount === 0"
               class="btn-modern-enhanced btn-danger text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd"
-                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clip-rule="evenodd" />
-              </svg>
-              删除选中 ({{ selectedCount }})
+              <path fill-rule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                clip-rule="evenodd" />
+            </svg>
+            删除选中 ({{ selectedCount }})
             </button>
             <button @click="toggleBatchDeleteMode"
               class="btn-modern-enhanced btn-cancel text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 transform hover:scale-105 transition-all duration-300">
@@ -236,7 +236,7 @@ const handleDragEnd = (evt: any) => {
     <div v-if="subscriptions.length > 0">
       <draggable v-if="isSortingSubs" tag="div"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8" v-model="localSubscriptions"
-        :item-key="(item: any) => item.id" animation="300" :delay="200" :delay-on-touch-only="true"
+        :item-key="(item: Subscription) => item.id" animation="300" :delay="200" :delay-on-touch-only="true"
         @end="handleDragEnd">
         <template #item="{ element: subscription }">
           <div class="cursor-move">

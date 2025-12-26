@@ -1,8 +1,27 @@
+<!--
+  ==================== 节点详情模态框 ====================
+  
+  功能说明：
+  - 查看订阅或订阅组的所有节点信息
+  - 支持搜索和筛选节点（含国家/地区别名智能匹配）
+  - 支持批量选择和复制节点
+  - 显示节点协议、名称、URL等详细信息
+  - 区分订阅组中的订阅节点和手动节点
+  
+  使用场景：
+  - 查看单个订阅的节点列表
+  - 查看订阅组聚合后的所有节点
+  - 复制选中的节点链接
+  
+  ==================================================
+-->
+
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useToastStore } from '../../stores/toast';
 import { subscriptionParser } from '@shared/subscription-parser';
 import type { Subscription, Profile, Node } from '../../types';
+import { COUNTRY_CODE_MAP } from '../../lib/constants';
 
 const props = defineProps<{
   show: boolean;
@@ -51,14 +70,32 @@ watch(() => props.show, async (newVal) => {
   }
 });
 
-// 过滤后的节点列表
+// 过滤后的节点列表（支持国家/地区别名搜索）
 const filteredNodes = computed(() => {
   if (!searchTerm.value) return nodes.value;
   const term = searchTerm.value.toLowerCase();
-  return nodes.value.filter(node =>
-    node.name.toLowerCase().includes(term) ||
-    node.url.toLowerCase().includes(term)
-  );
+  // 获取搜索词对应的国家/地区别名
+  const alternativeTerms = COUNTRY_CODE_MAP[term] || [];
+
+  return nodes.value.filter(node => {
+    const nodeName = node.name.toLowerCase();
+    const nodeUrl = node.url.toLowerCase();
+
+    // 基础匹配：节点名称或 URL 包含搜索词
+    if (nodeName.includes(term) || nodeUrl.includes(term)) {
+      return true;
+    }
+
+    // 高级匹配：节点名称或 URL 包含任一别名
+    for (const altTerm of alternativeTerms) {
+      const altTermLower = altTerm.toLowerCase();
+      if (nodeName.includes(altTermLower) || nodeUrl.includes(altTermLower)) {
+        return true;
+      }
+    }
+
+    return false;
+  });
 });
 
 // 获取单个订阅的节点信息
@@ -83,7 +120,7 @@ const fetchNodes = async () => {
     const parsedNodes = subscriptionParser.parse(content, props.subscription?.name || '');
     // Apply filtering and processing
     const processedNodes = subscriptionParser.processNodes(parsedNodes, props.subscription?.name || '', {
-      exclude: (props.subscription as any).exclude
+      exclude: props.subscription?.exclude
     });
 
     nodes.value = processedNodes.map(n => ({
@@ -94,9 +131,10 @@ const fetchNodes = async () => {
       enabled: true
     }));
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取节点信息失败:', error);
-    errorMessage.value = `获取节点信息失败: ${error.message}`;
+    const msg = error instanceof Error ? error.message : String(error);
+    errorMessage.value = `获取节点信息失败: ${msg}`;
     toastStore.showToast('获取节点信息失败', 'error');
   } finally {
     isLoading.value = false;
@@ -178,9 +216,10 @@ const fetchProfileNodes = async () => {
 
     nodes.value = profileNodes;
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取订阅组节点信息失败:', error);
-    errorMessage.value = `获取节点信息失败: ${error.message}`;
+    const msg = error instanceof Error ? error.message : String(error);
+    errorMessage.value = `获取节点信息失败: ${msg}`;
     toastStore.showToast('获取节点信息失败', 'error');
   } finally {
     isLoading.value = false;

@@ -91,7 +91,7 @@ const copyToClipboard = async () => {
 };
 
 const showNodeDetails = ref(false);
-const previewSubscription = ref<{ name: string; url: string } | null>(null);
+const previewSubscription = ref<Subscription | null>(null);
 
 /** 打开节点预览 */
 const openNodePreview = () => {
@@ -103,8 +103,10 @@ const openNodePreview = () => {
   previewUrl = `${urlObj.toString()}?base64`;
 
   previewSubscription.value = {
+    id: 'preview',
     name: '订阅预览',
-    url: previewUrl
+    url: previewUrl,
+    enabled: true
   };
   showNodeDetails.value = true;
 };

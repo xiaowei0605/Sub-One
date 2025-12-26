@@ -47,7 +47,7 @@ import { HTTP_REGEX } from '../../lib/constants';
 import { parseImportText, createSubscription, createNode } from '../../lib/importer';
 
 // 类型定义
-import type { Subscription, Profile, Node as AppNode, AppConfig, InitialData } from '../../types';
+import type { Subscription, Profile, Node as AppNode, AppConfig, InitialData, SubscriptionUserInfo } from '../../types';
 
 // 同步加载的组件（核心标签页）
 import DashboardHome from '../tabs/DashboardHome.vue';
@@ -480,15 +480,23 @@ const handleUpdateAllSubscriptions = async () => {
   try {
     const result = await batchUpdateNodes(enabledSubs.map(sub => sub.id));
     
+    // 定义更新结果接口
+    interface UpdateResult {
+      success: boolean;
+      id: string;
+      nodeCount?: number;
+      userInfo?: SubscriptionUserInfo;
+    }
+
     // 兼容 data 和 results 字段，处理后端可能返回的不同结构
-    const updateResults = Array.isArray(result.data) 
+    const updateResults = (Array.isArray(result.data) 
       ? result.data 
-      : (Array.isArray((result as any).results) ? (result as any).results : null);
+      : (Array.isArray((result as any).results) ? (result as any).results : null)) as UpdateResult[] | null;
 
     if (result.success && updateResults) {
        // 使用 Map 提升查找性能
        const subsMap = new Map(subscriptions.value.map(s => [s.id, s]));
-       updateResults.forEach((r: any) => {
+       updateResults.forEach((r) => {
          if (r.success) {
            const sub = subsMap.get(r.id);
            if (sub) {
@@ -497,7 +505,7 @@ const handleUpdateAllSubscriptions = async () => {
            }
          }
        });
-       const successCount = updateResults.filter((r: any) => r.success).length;
+       const successCount = updateResults.filter((r) => r.success).length;
        showToast(`成功更新了 ${successCount} 个订阅`, 'success');
        await handleDirectSave('订阅更新', false);
     } else {
