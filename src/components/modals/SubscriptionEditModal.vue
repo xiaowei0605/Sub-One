@@ -226,39 +226,8 @@ const toggleAdvanced = () => {
             </p>
           </div>
 
-          <!-- 启用开关 -->
-          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                :class="localSubscription.enabled 
-                  ? 'bg-green-100 dark:bg-green-900/30' 
-                  : 'bg-gray-200 dark:bg-gray-700'">
-                <svg class="w-5 h-5" 
-                  :class="localSubscription.enabled 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-gray-400'"
-                  fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-              </div>
-              <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  启用订阅
-                </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  启用后此订阅的节点可用于订阅组
-                </p>
-              </div>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                v-model="localSubscription.enabled"
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
+
+
         </div>
 
         <!-- 高级选项 -->

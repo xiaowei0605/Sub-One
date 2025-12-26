@@ -7,6 +7,7 @@
 import { ref, computed, onUnmounted } from 'vue';
 import { useToastStore } from '../../stores/toast';
 import NodeDetailsModal from '../modals/NodeDetailsModal.vue';
+import QRCode from 'qrcode';
 import type { AppConfig, Profile, Subscription } from '../../types';
 
 const props = withDefaults(defineProps<{
@@ -91,6 +92,21 @@ const copyToClipboard = async () => {
 };
 
 const showNodeDetails = ref(false);
+const showQrcode = ref(false);
+const qrcodeUrl = ref('');
+
+const toggleQrcode = async () => {
+  if (!subLink.value) return;
+  if (!showQrcode.value) {
+    try {
+      qrcodeUrl.value = await QRCode.toDataURL(subLink.value, { width: 300, margin: 1 });
+    } catch (err) {
+      console.error('QR Gen Error:', err);
+    }
+  }
+  showQrcode.value = !showQrcode.value;
+};
+
 const previewSubscription = ref<Subscription | null>(null);
 
 /** 打开节点预览 */
@@ -210,7 +226,27 @@ onUnmounted(() => {
                 </svg>
                 <span class="text-sm">预览</span>
               </button>
+              <button v-if="showUrl" @click="toggleQrcode"
+                class="flex-1 px-3 py-2 rounded-xl hover:bg-gray-500/20 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-all duration-200 flex items-center justify-center gap-2"
+                :class="{ 'bg-gray-100 dark:bg-gray-700': showQrcode }"
+                title="生成二维码">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 4v1m6 11h2m-6 0h-2v4h2v-4zm-6 0H6.414a1 1 0 00-.707.293L4 17.086v1.828l1.707 1.707a1 1 0 00.707.293H8v-4zM17 14h2v2h-2v-2zm-4-4h4m-4 4h2v2h-2v-2zm-10 6h2v2H3v-2zm6-10H5a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2zm10 0h-4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2zM5 8h4v4H5V8zm10 0h4v4h-4V8z" />
+                </svg>
+                <span class="text-sm">二维码</span>
+              </button>
             </div>
+
+            <!-- 二维码显示区域 -->
+            <Transition name="fade">
+              <div v-if="showQrcode && qrcodeUrl" class="mt-4 flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                <img :src="qrcodeUrl" alt="订阅二维码" class="w-48 h-48 sm:w-64 sm:h-64 object-contain" />
+                <p class="mt-2 text-xs text-gray-500">请使用客户端扫描添加到订阅</p>
+              </div>
+            </Transition>
+
 
             <NodeDetailsModal v-model:show="showNodeDetails" :subscription="previewSubscription" />
           </div>
