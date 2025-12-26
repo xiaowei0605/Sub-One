@@ -140,10 +140,10 @@ watch(() => props.show, (newValue) => {
 
 // 预设的后端地址选项
 const converterPresets = [
-  { label: 'api.v1.mk (推荐)', value: 'api.v1.mk' },
+  { label: 'api-sucmeta.0z.gs (推荐)', value: 'api-sucmeta.0z.gs' },
+  { label: 'api.v1.mk', value: 'api.v1.mk' },
   { label: 'url.v1.mk', value: 'url.v1.mk' },
-  { label: 'sub.xeton.dev', value: 'sub.xeton.dev' },
-  { label: 'api.dler.io', value: 'api.dler.io' },
+  { label: 'sub.xeton.dev', value: 'sub.xeton.dev' }, 
   { label: 'sub.id9.cc', value: 'sub.id9.cc' },
   { label: '自定义', value: '' }
 ];
@@ -151,24 +151,24 @@ const converterPresets = [
 // 预设的配置文件选项
 const configPresets = [
   {
-    label: 'ACL4SSR 在线完整版 (推荐)',
-    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/refs/heads/main/Clash/config/ACL4SSR_Online_Full.ini'
+    label: 'ACL4SSR 默认版 (推荐)',
+    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online.ini'
+  },
+  {
+    label: 'ACL4SSR 完整版 (全分组)',
+    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full.ini'
+  },
+  {
+    label: 'ACL4SSR 多模式版 (含自动/负载均衡)',
+    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini'
   },
   {
     label: 'ACL4SSR 精简版',
-    value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini'
+    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Mini.ini'
   },
   {
     label: 'ACL4SSR 去广告版',
-    value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_AdblockPlus.ini'
-  },
-  {
-    label: 'ACL4SSR 无测速版',
-    value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_NoAuto.ini'
-  },
-  {
-    label: 'ACL4SSR 极简版',
-    value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_NoAuto.ini'
+    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_AdblockPlus.ini'
   },
   { label: '自定义', value: '' }
 ];
