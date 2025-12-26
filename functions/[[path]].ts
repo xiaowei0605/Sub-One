@@ -1058,6 +1058,9 @@ async function handleSubRequest(context: EventContext<Env, any, any>) {
     if (targetFormat === 'clash') {
         subconverterUrl.searchParams.set('ver', 'meta');
     }
+    if (targetFormat === 'surge') {
+        subconverterUrl.searchParams.set('ver', '4');
+    }
 
     subconverterUrl.searchParams.set('url', callbackUrl);
     if ((targetFormat === 'clash' || targetFormat === 'loon' || targetFormat === 'surge') && effectiveSubConfig && effectiveSubConfig.trim() !== '') {
