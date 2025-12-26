@@ -172,6 +172,12 @@ export interface AppConfig {
     /** Telegram Chat ID（接收通知的聊天 ID） */
     ChatID?: string;
 
+    // ========== 通知阈值配置 ==========
+    /** 订阅到期提醒阈值（剩余天数小于此值时提醒） */
+    NotifyThresholdDays?: number;
+    /** 流量使用提醒阈值（使用百分比大于此值时提醒） */
+    NotifyThresholdPercent?: number;
+
     /** 动态扩展字段 */
     [key: string]: unknown;
 }

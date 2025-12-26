@@ -36,16 +36,25 @@ const { showToast } = useToastStore();
 const isLoading = ref(false);
 const isSaving = ref(false);
 
-// 默认设置值
+// 默认设置值（与后端保持一致）
 const defaultSettings: AppConfig = {
+  // 基础配置
   FileName: 'Sub-One',
+  mytoken: 'auto',
+  profileToken: '', // 默认为空，用户需主动设置
+  
+  // 订阅转换配置
   subConverter: 'url.v1.mk',
   subConfig: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/refs/heads/main/Clash/config/ACL4SSR_Online_Full.ini',
   prependSubName: true,
-  mytoken: 'auto',
-  profileToken: '', // 默认为空，用户需主动设置
+  
+  // Telegram 通知配置
   BotToken: '',
-  ChatID: ''
+  ChatID: '',
+  
+  // 通知阈值配置
+  NotifyThresholdDays: 3,        // 订阅到期提醒阈值（剩余天数）
+  NotifyThresholdPercent: 90     // 流量使用提醒阈值（使用百分比）
 };
 
 // 初始化时直接使用默认值，确保界面不会显示空白
@@ -357,7 +366,62 @@ const configPresets = [
             </div>
           </div>
         </section>
+
+        <!-- 通知阈值设置 -->
+        <section>
+          <h4
+            class="flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            通知阈值
+          </h4>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 到期提醒阈值 -->
+            <div class="group">
+              <label for="notifyThresholdDays"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                到期提醒阈值（天）
+              </label>
+              <input
+                type="number"
+                id="notifyThresholdDays"
+                v-model.number="settings.NotifyThresholdDays"
+                min="1"
+                max="30"
+                class="input-modern-enhanced w-full"
+                placeholder="例如：3"
+              >
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                当订阅剩余天数小于此值时发送提醒
+              </p>
+            </div>
+            
+            <!-- 流量提醒阈值 -->
+            <div class="group">
+              <label for="notifyThresholdPercent"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                流量提醒阈值（%）
+              </label>
+              <input
+                type="number"
+                id="notifyThresholdPercent"
+                v-model.number="settings.NotifyThresholdPercent"
+                min="50"
+                max="100"
+                class="input-modern-enhanced w-full"
+                placeholder="例如：90"
+              >
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                当流量使用超过此百分比时发送提醒
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </template>
   </Modal>
 </template>
+```
