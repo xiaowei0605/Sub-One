@@ -12,6 +12,7 @@ const KV_KEY_PROFILES = 'sub_one_profiles_v1';
 const KV_KEY_SETTINGS = 'worker_settings_v1';
 const COOKIE_NAME = 'auth_session';
 const SESSION_DURATION = 8 * 60 * 60 * 1000;
+const GLOBAL_USER_AGENT = 'Clash.Meta/v1.19.18'; // Unified UA: Mihomo v1.19.18
 
 
 interface Env {
@@ -147,12 +148,12 @@ async function handleCronTrigger(env: Env) {
             try {
                 // --- 並行請求流量和節點內容 ---
                 const trafficRequest = fetch(new Request(sub.url, {
-                    headers: { 'User-Agent': 'Clash for Windows/0.20.39' },
+                    headers: { 'User-Agent': GLOBAL_USER_AGENT },
                     redirect: "follow",
                     cf: { insecureSkipVerify: true }
                 } as any));
                 const nodeCountRequest = fetch(new Request(sub.url, {
-                    headers: { 'User-Agent': 'Sub-One-Cron-Updater/1.0' },
+                    headers: { 'User-Agent': GLOBAL_USER_AGENT },
                     redirect: "follow",
                     cf: { insecureSkipVerify: true }
                 } as any));
@@ -449,12 +450,12 @@ async function handleApiRequest(request: Request, env: Env) {
 
             try {
                 const fetchOptions = {
-                    headers: { 'User-Agent': 'Sub-One-Node-Counter/2.0' },
+                    headers: { 'User-Agent': GLOBAL_USER_AGENT },
                     redirect: "follow",
                     cf: { insecureSkipVerify: true }
                 } as any;
                 const trafficFetchOptions = {
-                    headers: { 'User-Agent': 'Clash for Windows/0.20.39' },
+                    headers: { 'User-Agent': GLOBAL_USER_AGENT },
                     redirect: "follow",
                     cf: { insecureSkipVerify: true }
                 } as any;
@@ -522,6 +523,10 @@ async function handleApiRequest(request: Request, env: Env) {
 
         case '/fetch_external_url': { // New case
             if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
+            // [安全修复] 添加鉴权，防止被恶意利用作为代理
+            if (!await authMiddleware(request, env)) {
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+            }
             const { url: externalUrl } = await request.json() as any;
             if (!externalUrl || typeof externalUrl !== 'string' || !/^https?:\/\//.test(externalUrl)) {
                 return new Response(JSON.stringify({ error: 'Invalid or missing url' }), { status: 400 });
@@ -529,7 +534,7 @@ async function handleApiRequest(request: Request, env: Env) {
 
             try {
                 const response = await fetch(new Request(externalUrl, {
-                    headers: { 'User-Agent': 'Sub-One-Proxy/1.0' }, // Identify as proxy
+                    headers: { 'User-Agent': GLOBAL_USER_AGENT }, // Unified UA
                     redirect: "follow",
                     cf: { insecureSkipVerify: true } // Allow insecure SSL for flexibility
                 } as any));
@@ -568,7 +573,7 @@ async function handleApiRequest(request: Request, env: Env) {
                 const updatePromises = subsToUpdate.map(async (sub) => {
                     try {
                         const fetchOptions = {
-                            headers: { 'User-Agent': 'Sub-One-Batch-Updater/1.0' },
+                            headers: { 'User-Agent': GLOBAL_USER_AGENT },
                             redirect: "follow",
                             cf: { insecureSkipVerify: true }
                         } as any;
@@ -686,7 +691,7 @@ async function handleApiRequest(request: Request, env: Env) {
 
                 const response = await fetch(testUrl, {
                     method: 'HEAD', // Try HEAD first for speed
-                    headers: { 'User-Agent': 'Sub-One-Latency-Tester/1.0' },
+                    headers: { 'User-Agent': GLOBAL_USER_AGENT },
                     redirect: 'follow',
                     signal: controller.signal,
                     cf: { insecureSkipVerify: true }
@@ -710,7 +715,7 @@ async function handleApiRequest(request: Request, env: Env) {
 
                     const responseGet = await fetch(testUrl, {
                         method: 'GET',
-                        headers: { 'User-Agent': 'Sub-One-Latency-Tester/1.0' },
+                        headers: { 'User-Agent': GLOBAL_USER_AGENT },
                         redirect: 'follow',
                         signal: controllerGet.signal,
                         cf: { insecureSkipVerify: true }
@@ -750,7 +755,6 @@ async function handleApiRequest(request: Request, env: Env) {
 }
 
 
-// 移除此行，已移动到顶部
 
 async function generateCombinedNodeList(context, config, userAgent, subs, prependedContent = '') {
     // 1. 处理手动节点
@@ -911,10 +915,10 @@ async function handleSubRequest(context: EventContext<Env, any, any>) {
 
     let targetFormat = url.searchParams.get('target');
     if (!targetFormat) {
-        const supportedFormats = ['clash', 'singbox', 'surge', 'loon', 'base64', 'v2ray', 'trojan'];
+        const supportedFormats = ['clash', 'singbox', 'surge', 'loon', 'base64', 'v2ray'];
         for (const format of supportedFormats) {
             if (url.searchParams.has(format)) {
-                if (format === 'v2ray' || format === 'trojan') { targetFormat = 'base64'; } else { targetFormat = format; }
+                if (format === 'v2ray') { targetFormat = 'base64'; } else { targetFormat = format; }
                 break;
             }
         }
@@ -939,7 +943,6 @@ async function handleSubRequest(context: EventContext<Env, any, any>) {
             ['v2rayng', 'base64'],
             ['surge', 'surge'],
             ['loon', 'loon'],
-            ['quantumult%20x', 'quanx'],
             ['quantumult', 'quanx'],
 
             // 最後才匹配通用的 clash，作為向下相容
@@ -998,7 +1001,7 @@ async function handleSubRequest(context: EventContext<Env, any, any>) {
     }
 
     // 使用固定的 User-Agent 请求上游订阅
-    const upstreamUserAgent = 'Clash.Meta/v1.16.0';
+    const upstreamUserAgent = GLOBAL_USER_AGENT;
     console.log(`Fetching upstream with UA: ${upstreamUserAgent}`);
 
     // 获取合并后的节点对象列表
