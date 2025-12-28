@@ -1,8 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import yaml from 'js-yaml';
 import { SubscriptionParser } from '../lib/shared/subscription-parser';
-import type { Node, ProcessOptions } from '../lib/shared/types';
+import type { Node } from '../lib/shared/types';
 
 const subscriptionParser = new SubscriptionParser();
 
