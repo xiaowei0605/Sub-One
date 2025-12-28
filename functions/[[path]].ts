@@ -158,8 +158,8 @@ async function handleCronTrigger(env: Env) {
                     cf: { insecureSkipVerify: true }
                 } as any));
                 const [trafficResult, nodeCountResult] = await Promise.allSettled([
-                    Promise.race([trafficRequest, new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))]),
-                    Promise.race([nodeCountRequest, new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))])
+                    Promise.race([trafficRequest, new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))]),
+                    Promise.race([nodeCountRequest, new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))])
                 ]) as [PromiseSettledResult<Response>, PromiseSettledResult<Response>];
 
                 if (trafficResult.status === 'fulfilled' && trafficResult.value.ok) {
@@ -580,7 +580,7 @@ async function handleApiRequest(request: Request, env: Env) {
 
                         const response = await Promise.race([
                             fetch(sub.url, fetchOptions),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
                         ]) as Response;
 
                         if (response.ok) {
@@ -687,7 +687,7 @@ async function handleApiRequest(request: Request, env: Env) {
             try {
                 const startTime = Date.now();
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
                 const response = await fetch(testUrl, {
                     method: 'HEAD', // Try HEAD first for speed
@@ -711,7 +711,7 @@ async function handleApiRequest(request: Request, env: Env) {
                     // If HEAD fails (some servers block it), try GET
                     const startTimeGet = Date.now();
                     const controllerGet = new AbortController();
-                    const timeoutIdGet = setTimeout(() => controllerGet.abort(), 10000);
+                    const timeoutIdGet = setTimeout(() => controllerGet.abort(), 30000);
 
                     const responseGet = await fetch(testUrl, {
                         method: 'GET',
@@ -778,7 +778,7 @@ async function generateCombinedNodeList(context, config, userAgent, subs, prepen
                     redirect: "follow",
                     cf: { insecureSkipVerify: true }
                 })),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 30000))
             ]) as Response;
 
             if (!response.ok) return [];
