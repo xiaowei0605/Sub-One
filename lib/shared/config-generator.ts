@@ -816,7 +816,8 @@ export class ConfigGenerator {
                     break;
 
                 case 'vless':
-                    line = `${name} = vless, ${url.hostname}, ${url.port}, ${url.username}`;
+                    // 基础格式：名称 = vless, 服务器, 端口, "UUID"
+                    line = `${name} = vless, ${url.hostname}, ${url.port}, "${url.username}"`;
 
                     // TLS / Reality
                     const security = params.get('security');
@@ -851,7 +852,8 @@ export class ConfigGenerator {
                     break;
 
                 case 'trojan':
-                    line = `${name} = trojan, ${url.hostname}, ${url.port}, ${url.username}`;
+                    // 基础格式：名称 = trojan, 服务器, 端口, "密码"
+                    line = `${name} = trojan, ${url.hostname}, ${url.port}, "${url.username}"`;
 
                     // SNI
                     if (params.get('sni')) line += `, tls-name=${params.get('sni')}`;
@@ -871,7 +873,8 @@ export class ConfigGenerator {
 
                 case 'hysteria2':
                 case 'hy2':
-                    line = `${name} = Hysteria2, ${url.hostname}, ${url.port}, password=${url.username || url.password}`;
+                    // 基础格式：名称 = Hysteria2, 服务器, 端口, "密码"
+                    line = `${name} = Hysteria2, ${url.hostname}, ${url.port}, "${url.username || url.password}"`;
 
                     // SNI
                     if (params.get('sni')) line += `, sni=${params.get('sni')}`;
