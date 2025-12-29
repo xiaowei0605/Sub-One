@@ -782,8 +782,9 @@ export class ConfigGenerator {
                         const obj = JSON.parse(atob(b64));
                         line = `${name} = vmess, ${obj.add}, ${obj.port}, username=${obj.id}`;
 
-                        // 加密方式
-                        if (obj.scy) line += `, cipher=${obj.scy}`;
+                        // 加密方式（默认 auto）
+                        const cipher = obj.scy || 'auto';
+                        line += `, cipher=${cipher}`;
 
                         // TLS
                         if (obj.tls === 'tls') {
@@ -796,14 +797,19 @@ export class ConfigGenerator {
 
                         // 传输协议
                         if (obj.net === 'ws') {
-                            line += `, transport=ws, path=${obj.path || '/'}`;
+                            line += `, transport=ws`;
+                            if (obj.path) line += `, path=${obj.path}`;
                             if (obj.host) line += `, host=${obj.host}`;
                         } else if (obj.net === 'grpc') {
                             line += `, transport=grpc`;
                             if (obj.serviceName) line += `, serviceName=${obj.serviceName}`;
+                        } else if (obj.net === 'h2') {
+                            line += `, transport=http`;
+                            if (obj.path) line += `, path=${obj.path}`;
+                            if (obj.host) line += `, host=${obj.host}`;
                         }
 
-                        // 通用参数
+                        // AEAD 和通用参数
                         line += `, vmess-aead=true, udp=true`;
                     }
                     break;
