@@ -60,7 +60,7 @@ export class ConfigGenerator {
         ];
 
         // 基础配置
-        const config = {
+        const general = {
             'port': 7890,
             'socks-port': 7891,
             'allow-lan': true,
@@ -77,9 +77,25 @@ export class ConfigGenerator {
                 'nameserver': ['223.5.5.5', '119.29.29.29'],
                 'fallback': ['8.8.8.8', '1.1.1.1', 'tls://1.0.0.1:853', 'tls://dns.google:853'],
                 'fallback-filter': { 'geoip': true, 'ipcidr': ['240.0.0.0/4', '0.0.0.0/32'] }
-            },
-            'proxies': proxies,
-            'proxy-groups': groups,
+            }
+        };
+
+        let yamlOutput = yaml.dump(general);
+
+        // 代理节点 (使用 Flow Style 紧凑格式，方便查看和节省体积)
+        if (proxies.length > 0) {
+            yamlOutput += '\nproxies:\n';
+            for (const p of proxies) {
+                // flowLevel: 0 强制内联，lineWidth: -1 禁止换行
+                yamlOutput += `  - ${yaml.dump(p, { flowLevel: 0, lineWidth: -1 }).trim()}\n`;
+            }
+        }
+
+        // 策略组
+        yamlOutput += '\n' + yaml.dump({ 'proxy-groups': groups });
+
+        // Rule Providers & Rules
+        const rulesParams = {
             // 使用 Rule Providers 引用外部高质量规则 (MetaCubeX)
             'rule-providers': {
                 'reject': {
@@ -122,7 +138,9 @@ export class ConfigGenerator {
             ]
         };
 
-        return yaml.dump(config);
+        yamlOutput += '\n' + yaml.dump(rulesParams);
+
+        return yamlOutput;
     }
 
     /**
