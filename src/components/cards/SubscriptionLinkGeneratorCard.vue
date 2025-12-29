@@ -28,15 +28,17 @@ const showUrl = ref(false);
 const copied = ref(false);
 let copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const formats = ['自适应', 'Base64', 'Clash', 'Sing-Box', 'Surge', 'Loon'];
+const formats = ['自适应', 'Base64', 'Clash', 'Stash', 'Sing-Box', 'Surge', 'Loon', 'Shadowrocket'];
 
 /** 格式映射表 */
 const FORMAT_MAPPING: Record<string, string> = {
   'Base64': 'base64',
   'Clash': 'clash',
+  'Stash': 'stash',
   'Sing-Box': 'singbox',
   'Surge': 'surge',
-  'Loon': 'loon'
+  'Loon': 'loon',
+  'Shadowrocket': 'shadowrocket'
 };
 
 /** 只显示已启用的订阅组 */

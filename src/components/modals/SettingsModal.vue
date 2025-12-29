@@ -43,9 +43,6 @@ const defaultSettings: AppConfig = {
   mytoken: 'auto',
   profileToken: '', // 默认为空，用户需主动设置
   
-  // 订阅转换配置
-  subConverter: 'url.v1.mk',
-  subConfig: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/refs/heads/main/Clash/config/ACL4SSR_Online_Full.ini',
   prependSubName: true,
   
   // Telegram 通知配置
@@ -65,8 +62,6 @@ const hasWhitespace = computed(() => {
     'FileName',
     'mytoken',
     'profileToken',
-    'subConverter',
-    'subConfig',
     'BotToken',
     'ChatID',
   ];
@@ -138,40 +133,7 @@ watch(() => props.show, (newValue) => {
   }
 }, { immediate: true });
 
-// 预设的后端地址选项
-const converterPresets = [
-  { label: 'api-sucmeta.0z.gs (推荐)', value: 'api-sucmeta.0z.gs' },
-  { label: 'api.v1.mk', value: 'api.v1.mk' },
-  { label: 'url.v1.mk', value: 'url.v1.mk' },
-  { label: 'sub.xeton.dev', value: 'sub.xeton.dev' }, 
-  { label: 'sub.id9.cc', value: 'sub.id9.cc' },
-  { label: '自定义', value: '' }
-];
 
-// 预设的配置文件选项
-const configPresets = [
-  {
-    label: 'ACL4SSR 默认版 (推荐)',
-    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online.ini'
-  },
-  {
-    label: 'ACL4SSR 完整版 (全分组)',
-    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full.ini'
-  },
-  {
-    label: 'ACL4SSR 多模式版 (含自动/负载均衡)',
-    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini'
-  },
-  {
-    label: 'ACL4SSR 精简版',
-    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Mini.ini'
-  },
-  {
-    label: 'ACL4SSR 去广告版',
-    value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_AdblockPlus.ini'
-  },
-  { label: '自定义', value: '' }
-];
 </script>
 
 <template>
@@ -266,74 +228,6 @@ const configPresets = [
                   </div>
                 </label>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- SubConverter设置 -->
-        <section>
-          <h4
-            class="flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-            </svg>
-            SubConverter 服务
-          </h4>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- 后端地址 -->
-            <div class="group space-y-3">
-              <label for="subConverter"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                后端地址
-              </label>
-
-              <!-- 预设选择 -->
-              <select
-                class="w-full px-4 py-2.5 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none transition-all"
-                @change="(e) => settings.subConverter = (e.target as HTMLSelectElement).value">
-                <option value="" disabled :selected="!converterPresets.some(p => p.value === settings.subConverter)"
-                  class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                  选择预设或自定义
-                </option>
-                <option v-for="preset in converterPresets" :key="preset.value" :value="preset.value"
-                  :selected="preset.value === settings.subConverter"
-                  class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                  {{ preset.label }}
-                </option>
-              </select>
-
-              <!-- 输入框 -->
-              <input type="text" id="subConverter" v-model="settings.subConverter" class="input-modern-enhanced w-full"
-                placeholder="例如：api.v1.mk">
-            </div>
-
-            <!-- 配置文件URL -->
-            <div class="group space-y-3">
-              <label for="subConfig"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                配置文件 URL
-              </label>
-
-              <!-- 预设选择 -->
-              <select
-                class="w-full px-4 py-2.5 bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none transition-all"
-                @change="(e) => settings.subConfig = (e.target as HTMLSelectElement).value">
-                <option value="" disabled :selected="!configPresets.some(p => p.value === settings.subConfig)"
-                  class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                  选择预设或自定义
-                </option>
-                <option v-for="preset in configPresets" :key="preset.value" :value="preset.value"
-                  :selected="preset.value === settings.subConfig"
-                  class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                  {{ preset.label }}
-                </option>
-              </select>
-
-              <!-- 输入框 -->
-              <input type="text" id="subConfig" v-model="settings.subConfig" class="input-modern-enhanced w-full"
-                placeholder="https://raw.githubusercontent.com/.../config.ini">
             </div>
           </div>
         </section>
