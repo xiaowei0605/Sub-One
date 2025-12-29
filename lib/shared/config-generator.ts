@@ -780,11 +780,12 @@ export class ConfigGenerator {
                     if (node.url.startsWith('vmess://')) {
                         const b64 = node.url.slice(8);
                         const obj = JSON.parse(atob(b64));
-                        line = `${name} = vmess, ${obj.add}, ${obj.port}, username=${obj.id}`;
 
                         // 加密方式（默认 auto）
                         const cipher = obj.scy || 'auto';
-                        line += `, cipher=${cipher}`;
+
+                        // 基础格式：名称 = vmess, 服务器, 端口, 加密方式, "UUID"
+                        line = `${name} = vmess, ${obj.add}, ${obj.port}, ${cipher}, "${obj.id}"`;
 
                         // TLS
                         if (obj.tls === 'tls') {
