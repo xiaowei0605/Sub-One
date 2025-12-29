@@ -664,34 +664,94 @@ export class ConfigGenerator {
 
             switch (node.protocol) {
                 case 'ss':
+                    // 格式：名称 = ss, 服务器, 端口, encrypt-method=xxx, password=xxx
                     line = `${name} = ss, ${url.hostname}, ${url.port}, encrypt-method=${url.username}, password=${url.password}`;
-                    if (params.get('plugin') === 'obfs-local') {
-                        // obfs handling
+                    if (params.has('plugin')) {
+                        const plugin = params.get('plugin');
+                        if (plugin?.includes('obfs')) {
+                            line += `, obfs=${plugin.includes('http') ? 'http' : 'tls'}`;
+                            if (params.has('obfs-host')) line += `, obfs-host=${params.get('obfs-host')}`;
+                        }
                     }
+                    line += `, udp-relay=true`;
                     break;
+
                 case 'vmess':
                     if (node.url.startsWith('vmess://')) {
                         const b64 = node.url.slice(8);
                         const obj = JSON.parse(atob(b64));
+
+                        // 格式：名称 = vmess, 服务器, 端口, username=xxx
                         line = `${name} = vmess, ${obj.add}, ${obj.port}, username=${obj.id}`;
-                        if (obj.tls === 'tls') line += `, tls=true`;
-                        if (obj.net === 'ws') line += `, ws=true, ws-path=${obj.path}`;
+
+                        // 加密方式
+                        if (obj.scy) line += `, encrypt-method=${obj.scy}`;
+
+                        // TLS
+                        if (obj.tls === 'tls') {
+                            line += `, tls=true`;
+                            if (obj.sni) line += `, sni=${obj.sni}`;
+                            if (obj.skip_cert_verify || obj['skip-cert-verify']) {
+                                line += `, skip-cert-verify=true`;
+                            }
+                        }
+
+                        // 传输协议
+                        if (obj.net === 'ws') {
+                            line += `, ws=true`;
+                            if (obj.path) line += `, ws-path=${obj.path}`;
+                            if (obj.host) line += `, ws-headers=Host:${obj.host}`;
+                        } else if (obj.net === 'h2') {
+                            line += `, http2=true`;
+                            if (obj.path) line += `, http2-path=${obj.path}`;
+                        }
+
+                        // VMess AEAD
+                        line += `, vmess-aead=true`;
                     }
                     break;
+
                 case 'trojan':
+                    // 格式：名称 = trojan, 服务器, 端口, password=xxx
                     line = `${name} = trojan, ${url.hostname}, ${url.port}, password=${url.username}`;
-                    if (params.get('security') === 'tls' || true) line += `, tls=true`;
+
+                    // SNI
                     if (params.get('sni')) line += `, sni=${params.get('sni')}`;
+
+                    // 传输协议
+                    if (params.get('type') === 'ws') {
+                        line += `, ws=true`;
+                        if (params.get('path')) line += `, ws-path=${params.get('path')}`;
+                        if (params.get('host')) line += `, ws-headers=Host:${params.get('host')}`;
+                    }
+
+                    line += `, skip-cert-verify=true`;
                     break;
+
                 case 'tuic':
+                    // Surge 支持 TUIC
                     line = `${name} = tuic, ${url.hostname}, ${url.port}, token=${url.password}`;
                     if (params.get('sni')) line += `, sni=${params.get('sni')}`;
+                    line += `, skip-cert-verify=true`;
                     break;
+
                 case 'hysteria2':
                 case 'hy2':
+                    // 格式：名称 = hysteria2, 服务器, 端口, password=xxx
                     line = `${name} = hysteria2, ${url.hostname}, ${url.port}, password=${url.username || url.password}`;
+
+                    // SNI
                     if (params.get('sni')) line += `, sni=${params.get('sni')}`;
+
+                    // 混淆
+                    if (params.get('obfs')) line += `, obfs=${params.get('obfs')}`;
+
+                    // 带宽
+                    if (params.get('down')) line += `, download-bandwidth=${params.get('down')}`;
+
+                    line += `, skip-cert-verify=true`;
                     break;
+
                 default:
                     return null;
             }
@@ -828,7 +888,7 @@ export class ConfigGenerator {
                     } else if (security === 'reality') {
                         line += `, over-tls=true`;
                         if (params.get('sni')) line += `, tls-name=${params.get('sni')}`;
-                        if (params.get('pbk')) line += `, public-key=${params.get('pbk')}`;
+                        if (params.get('pbk')) line += `, public-key="${params.get('pbk')}"`;
                         if (params.get('sid')) line += `, short-id=${params.get('sid')}`;
                         if (params.get('fp')) line += `, fingerprint=${params.get('fp')}`;
                     }
