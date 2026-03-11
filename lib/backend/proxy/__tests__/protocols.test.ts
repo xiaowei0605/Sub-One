@@ -61,16 +61,35 @@ describe('ProxyUtils Protocol Detail Tests', () => {
     });
 
     it('should parse AnyTLS correctly', () => {
-        const uri = 'anytls://pass@host:443?sni=sni.com&fp=chrome&idle_timeout=60#AnyNode';
+        const uri =
+            'anytls://pass@host:443?sni=sni.com&fp=chrome&idle-session-timeout=60&max-stream-count=8#AnyNode';
         const nodes = parse(uri);
         expect(nodes.length).toBe(1);
         const node = nodes[0];
         expect(node.type).toBe('anytls');
         expect(node.password).toBe('pass');
+        expect(node.tls).toBe(true);
         expect(node.sni).toBe('sni.com');
         expect(node['client-fingerprint']).toBe('chrome');
-        expect(node.idleTimeout).toBe(60);
+        expect(node['idle-session-timeout']).toBe(60);
+        expect(node['max-stream-count']).toBe(8);
         expect(node.name).toBe('AnyNode');
+    });
+
+    it('should parse AnyTLS with insecure=1 (real subscription format)', () => {
+        const uri =
+            'anytls://72f8ffe2-e377-466f-8e0d-3b9af6c49a4f@usall.9966663.xyz:20131/?insecure=1&sni=usall.9966663.xyz#%F0%9F%87%BA%F0%9F%87%B8%20SKYLUMO.CC';
+        const nodes = parse(uri);
+        expect(nodes.length).toBe(1);
+        const node = nodes[0];
+        expect(node.type).toBe('anytls');
+        expect(node.password).toBe('72f8ffe2-e377-466f-8e0d-3b9af6c49a4f');
+        expect(node.server).toBe('usall.9966663.xyz');
+        expect(node.port).toBe(20131);
+        expect(node.tls).toBe(true);
+        expect(node.sni).toBe('usall.9966663.xyz');
+        expect(node['skip-cert-verify']).toBe(true);
+        expect(node.name).toBe('🇺🇸 SKYLUMO.CC');
     });
 
     it('should parse Naive correctamente', () => {

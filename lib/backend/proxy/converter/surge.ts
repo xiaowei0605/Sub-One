@@ -55,6 +55,8 @@ export class SurgeConverter extends BaseConverter {
                     return this.ssh(p);
                 case 'external':
                     return this.external(p);
+                case 'anytls':
+                    return this.anytls(p);
                 case 'direct':
                 case 'reject':
                     return `${p.name}=${p.type}`;

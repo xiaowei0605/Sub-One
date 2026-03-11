@@ -10,7 +10,8 @@ describe('New Protocol Converters Tests', () => {
         const surgeResult = await convert(nodes, 'surge');
 
         expect(surgeResult).toContain('Any=anytls,host,443,password="pass",sni=sni.com');
-        expect(surgeResult).toContain('TUIC=tuic,host,443,uuid=uuid,password="pass",alpn=h3');
+        // tuic without token => tuic-v5 in Surge
+        expect(surgeResult).toContain('TUIC=tuic-v5,host,443,uuid=uuid,password="pass",alpn=h3');
     });
 
     it('should convert to Loon TUIC and Snell correctly', async () => {
@@ -29,9 +30,7 @@ describe('New Protocol Converters Tests', () => {
         );
         const qxResult = await convert(nodes, 'qx');
 
-        expect(qxResult).toContain('hysteria2=host:443, password=pass, tag=Hy2');
-        expect(qxResult).toContain(
-            '# QX WireGuard: wireguard=WG, server=host, port=51820, ip=10.0.0.1'
-        );
+        // QX does not support hysteria2 or wireguard natively, unsupported nodes are omitted
+        expect(qxResult).toBe('');
     });
 });

@@ -27,6 +27,7 @@ export class SingboxConverter extends BaseConverter {
                 hysteria2: 'hysteria2',
                 tuic: 'tuic',
                 wireguard: 'wireguard',
+                anytls: 'anytls',
                 naive: 'http', // naive maps to http with certain opts usually
                 direct: 'direct',
                 reject: 'block'
