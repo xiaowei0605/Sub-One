@@ -31,6 +31,8 @@ export class SurfboardConverter extends BaseConverter {
                     return this.http(p);
                 case 'socks5':
                     return this.socks5(p);
+                case 'snell':
+                    return this.snell(p);
                 case 'wireguard':
                     return this.wireguard(p);
                 case 'anytls':
@@ -125,6 +127,27 @@ export class SurfboardConverter extends BaseConverter {
             'skip-cert-verify'
         );
         result.appendIfPresent(`,udp-relay=${proxy.udp}`, 'udp');
+        return result.toString();
+    }
+
+    private snell(proxy: ProxyNode): string {
+        if ((proxy.version ?? 0) > 3) {
+            throw new Error(
+                `[SurfboardConverter] Surfboard does not support Snell version ${proxy.version}`
+            );
+        }
+        const result = new Result(proxy);
+        result.append(`${proxy.name}=snell,${proxy.server},${proxy.port}`);
+        result.appendIfPresent(`,version=${proxy.version}`, 'version');
+        result.appendIfPresent(`,psk=${proxy.password}`, 'password');
+        if (proxy['obfs-opts']?.mode) {
+            result.append(`,obfs=${proxy['obfs-opts'].mode}`);
+            result.appendIfPresent(`,obfs-host=${proxy['obfs-opts'].host}`, 'obfs-opts.host');
+        }
+        result.appendIfPresent(`,tfo=${proxy.tfo}`, 'tfo');
+        if ((proxy.version ?? 0) >= 3) {
+            result.appendIfPresent(`,udp-relay=${proxy.udp}`, 'udp');
+        }
         return result.toString();
     }
 

@@ -120,6 +120,7 @@ export function parseClashNode(p: any): ProxyNode | null {
         case 'vless':
             node.uuid = p.uuid || p.id;
             node.flow = p.flow;
+            if (p['tls-pubkey-sha256']) node['tls-pubkey-sha256'] = p['tls-pubkey-sha256'];
             // Reality 处理
             if (p['reality-opts']) {
                 node['reality-opts'] = {
@@ -149,6 +150,10 @@ export function parseClashNode(p: any): ProxyNode | null {
 
         case 'hysteria2':
             node.password = p.password;
+            node.up = p.up;
+            node.down = p.down;
+            node.ports = p.ports;
+            node['hop-interval'] = p['hop-interval'];
             if (p.obfs) {
                 node.obfs = p.obfs;
                 node['obfs-password'] = p['obfs-password'];
@@ -158,17 +163,27 @@ export function parseClashNode(p: any): ProxyNode | null {
         case 'tuic':
             node.uuid = p.uuid || p.id;
             node.password = p.password;
+            node.token = p.token;
+            node.version = p.version;
             node['congestion-controller'] = p['congestion-controller'];
             node['udp-relay-mode'] = p['udp-relay-mode'];
+            node['reduce-rtt'] = p['reduce-rtt'];
+            node['disable-sni'] = p['disable-sni'];
+            node['heartbeat-interval'] = p['heartbeat-interval'];
             break;
 
         case 'wireguard':
             node['private-key'] = p['private-key'];
+            node['public-key'] = p['public-key'];
+            node['pre-shared-key'] = p['pre-shared-key'] || p['preshared-key'];
             node.ip = p.ip;
             node.ipv6 = p.ipv6;
             node.mtu = p.mtu;
             node.reserved = p.reserved;
             node.udp = true;
+            if (Array.isArray(p.peers) && p.peers.length > 0) {
+                node.peers = p.peers;
+            }
             break;
 
         case 'socks5':

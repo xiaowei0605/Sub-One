@@ -197,14 +197,18 @@ export interface ProxyNode {
     preSharedKey?: string; // 别名 (兼容旧版)
     reserved?: string | number[]; // 保留字段
     mtu?: number; // MTU
-    ip?: string; // IPv4地址
+    dns?: string | string[]; // DNS 服务器 (WireGuard)
+    'allowed-ips'?: string[]; // 允许的 IP 段 (WireGuard top-level)
     ipv6?: string; // IPv6地址
     peers?: Array<{
         // WireGuard peers
+        server?: string;
+        port?: number;
         endpoint?: string;
         'public-key'?: string;
         'pre-shared-key'?: string;
         'allowed-ips'?: string[];
+        allowed_ips?: string[];
         reserved?: string | number[];
     }>;
 
@@ -296,7 +300,8 @@ export interface ProcessOptions {
 
 export interface ConvertOptions {
     filename?: string; // 文件名
-    'include-unsupported-proxy'?: boolean; // 是否包含不支持的代理
+    'include-unsupported-proxy'?: boolean; // 是否包含不支持的代理 (kebab-case)
+    includeUnsupportedProxy?: boolean; // 是否包含不支持的代理 (camelCase)
     useMihomoExternal?: boolean; // 是否使用 Mihomo External
     [key: string]: any; // 其他平台特定选项
 }

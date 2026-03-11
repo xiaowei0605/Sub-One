@@ -55,9 +55,27 @@ export function parseLoon(line: string): ProxyNode | null {
                 proxy.protocol = parts[5];
                 proxy.obfs = parts[6];
             }
-        } else if (rawType === 'vmess' || rawType === 'vless') {
-            proxy.type = rawType as ProxyType;
-            if (parts.length >= 4) proxy.uuid = parts[3];
+        } else if (rawType === 'vmess') {
+            proxy.type = 'vmess';
+            // Loon 格式: vmess,server,port,cipher,"uuid",...
+            if (parts.length >= 4) proxy.cipher = parts[3].replace(/^"(.*)"$/, '$1');
+            if (parts.length >= 5) proxy.uuid = parts[4].replace(/^"(.*)"$/, '$1');
+        } else if (rawType === 'vless') {
+            proxy.type = 'vless';
+            if (parts.length >= 4) proxy.uuid = parts[3].replace(/^"(.*)"$/, '$1');
+        } else if (rawType === 'tuic') {
+            proxy.type = 'tuic';
+            // Loon 格式: tuic,server,port,"uuid","password",...
+            if (parts.length >= 4) proxy.uuid = parts[3].replace(/^"(.*)"$/, '$1');
+            if (parts.length >= 5) proxy.password = parts[4].replace(/^"(.*)"$/, '$1');
+        } else if (rawType === 'hysteria2') {
+            proxy.type = 'hysteria2';
+            // Loon 格式: Hysteria2,server,port,"password",...
+            if (parts.length >= 4) proxy.password = parts[3].replace(/^"(.*)"$/, '$1');
+        } else if (rawType === 'hysteria') {
+            proxy.type = 'hysteria';
+            // auth token at pos 3
+            if (parts.length >= 4) proxy['auth'] = parts[3].replace(/^"(.*)"$/, '$1');
         } else if (rawType === 'trojan') {
             proxy.type = 'trojan';
             if (parts.length >= 4) proxy.password = parts[3];
@@ -197,7 +215,7 @@ function mapLoonParams(proxy: Partial<ProxyNode>, params: Record<string, string>
     if (params.encrypt || params['encrypt-method'])
         proxy.cipher = params.encrypt || params['encrypt-method'];
 
-    proxy.tls = params.tls === 'true' || proxy.type === 'https' || proxy.type === 'anytls';
+    proxy.tls = params.tls === 'true' || params['over-tls'] === 'true' || proxy.type === 'https' || proxy.type === 'anytls';
     if (params.sni || params['tls-name']) proxy.sni = params.sni || params['tls-name'];
     if (params['skip-cert-verify'])
         proxy['skip-cert-verify'] = params['skip-cert-verify'] === 'true';
@@ -205,6 +223,25 @@ function mapLoonParams(proxy: Partial<ProxyNode>, params: Record<string, string>
     if (params['tls-pubkey-sha256']) proxy['tls-pubkey-sha256'] = params['tls-pubkey-sha256'];
     if (params.udp) proxy.udp = params.udp === 'true';
     if (params['fast-open']) proxy.tfo = params['fast-open'] === 'true';
+
+    // VMess alterId 命名参数
+    if (params.alterid !== undefined) proxy.alterId = parseInt(params.alterid, 10);
+    else if (params['alter-id'] !== undefined) proxy.alterId = parseInt(params['alter-id'], 10);
+
+    // 传输层: transport=ws/grpc (Loon VMess/Trojan/VLESS 格式)
+    if (params.transport === 'ws' || params.transport === 'wss') {
+        proxy.network = 'ws';
+        proxy['ws-opts'] = {
+            path: params.path || '/',
+            headers: params.host ? { Host: params.host } : {}
+        };
+        if (params.transport === 'wss') proxy.tls = true;
+    } else if (params.transport === 'grpc') {
+        proxy.network = 'grpc';
+        proxy['grpc-opts'] = {
+            'grpc-service-name': params['grpc-service-name'] || params.servicename || ''
+        } as any;
+    }
 
     // AnyTLS session 参数
     if (proxy.type === 'anytls') {

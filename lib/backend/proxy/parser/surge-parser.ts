@@ -136,7 +136,7 @@ function mapSurgeParams(proxy: Partial<ProxyNode>, params: Record<string, string
     if (params['encrypt-method']) proxy.cipher = params['encrypt-method'];
 
     // TLS - anytls 协议始终使用 TLS
-    proxy.tls = params.tls === 'true' || proxy.type === 'https' || proxy.type === 'anytls' || !!params.sni;
+    proxy.tls = params.tls === 'true' || proxy.type === 'https' || proxy.type === 'anytls';
     if (params.sni) proxy.sni = params.sni;
     if (params['skip-cert-verify'])
         proxy['skip-cert-verify'] = params['skip-cert-verify'] === 'true';
@@ -168,13 +168,22 @@ function mapSurgeParams(proxy: Partial<ProxyNode>, params: Record<string, string
     switch (proxy.type) {
         case 'vmess':
             proxy.uuid = params.username;
-            if (params.version) proxy.alterId = parseInt(params.version, 10);
+            proxy.alterId = 0; // Surge 始终使用 AEAD 模式
             break;
         case 'vless':
             proxy.uuid = params.username;
             break;
         case 'tuic':
-            proxy.uuid = params.username; // Surge format often uses username as uuid
+            proxy.uuid = params.username;
+            if (params['congestion-controller'])
+                proxy['congestion-controller'] = params['congestion-controller'];
+            if (params['udp-relay-mode']) proxy['udp-relay-mode'] = params['udp-relay-mode'];
+            if (params['reduce-rtt'] === 'true') proxy['reduce-rtt'] = true;
+            break;
+        case 'hysteria2':
+            // password 已由通用逻辑处理
+            if (params.up) proxy.up = params.up;
+            if (params.down) proxy.down = params.down;
             break;
         case 'snell':
             if (params.version) proxy.version = parseInt(params.version, 10);
