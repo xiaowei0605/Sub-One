@@ -91,6 +91,30 @@ async function generateCombinedNodeList(
  * @param filename 文件名
  * @returns 转换后的内容
  */
+type ExternalApiType = 'subconverter' | 'sublink-worker';
+
+/**
+ * 检测外部 API 类型（Subconverter 还是 Sublink Worker）
+ * 通过访问首页的 title 判断
+ */
+async function detectExternalApiType(apiBaseUrl: string): Promise<ExternalApiType> {
+    try {
+        const resp = await fetch(apiBaseUrl, {
+            method: 'GET',
+            headers: { 'User-Agent': GLOBAL_USER_AGENT },
+            redirect: 'follow'
+        });
+        const text = await resp.text();
+        // Sublink Worker 的首页 title 包含 "Sublink Worker"
+        if (text.includes('Sublink Worker') || text.includes('sublink-worker')) {
+            return 'sublink-worker';
+        }
+    } catch {
+        // 忽略检测错误，默认走 subconverter
+    }
+    return 'subconverter';
+}
+
 async function convertViaExternalApi(
     externalApiUrl: string,
     subscriptionUrl: string,
@@ -103,14 +127,13 @@ async function convertViaExternalApi(
     }
 
     // --- 目标格式映射 (针对外部 API 的兼容性) ---
-    // 很多外部 API (subconverter) 不认识 mihomo 或 stash，需要映射为标准名称
     let apiTarget = targetFormat.toLowerCase();
     const targetMapping: Record<string, string> = {
         mihomo: 'clash',
         stash: 'clash',
         quantumultx: 'quanx',
         v2ray: 'v2ray',
-        shadowrocket: 'ss' // 某些老的 API 可能需要这一层映射，或者保持 shadowrocket
+        shadowrocket: 'ss'
     };
 
     if (targetMapping[apiTarget]) {
@@ -118,46 +141,92 @@ async function convertViaExternalApi(
     }
 
     try {
-        const apiUrl = new URL(finalApiUrl);
+        // --- 检测 API 类型 ---
+        const apiType = await detectExternalApiType(finalApiUrl);
+        console.log(`Detected external API type: ${apiType}`);
 
-        // --- 智能路径补全 ---
-        // 如果用户只填了域名（路径为空或是 "/"），自动补全 "/sub"
-        // 这样用户就可以直接填 "api-suc.0z.gs" 这种域名了
-        if (apiUrl.pathname === '/' || apiUrl.pathname === '') {
-            apiUrl.pathname = '/sub';
-        }
+        if (apiType === 'sublink-worker') {
+            // ===== Sublink Worker 模式 =====
+            // Sublink Worker 使用 /clash?config=... 格式
+            // 其中 config 参数是 URL 编码后的节点链接（每行一个）
+            // 但它也支持传入订阅 URL，由服务端抓取
 
-        // 基础参数
-        apiUrl.searchParams.set('target', apiTarget);
+            const apiUrl = new URL(finalApiUrl);
+            // 格式映射：Sublink Worker 使用 /clash, /singbox 等路径
+            const sublinkTargetMap: Record<string, string> = {
+                clash: 'clash',
+                mihomo: 'clash',
+                singbox: 'singbox',
+                'sing-box': 'singbox',
+                surge: 'surge',
+                loon: 'loon',
+                quantumultx: 'quantumultx',
+                quanx: 'quantumultx',
+                shadowrocket: 'shadowrocket',
+                stash: 'stash',
+                v2ray: 'xray',
+                base64: 'xray',
+                uri: 'xray'
+            };
+            const sublinkTarget = sublinkTargetMap[apiTarget] || 'clash';
+            apiUrl.pathname = '/' + sublinkTarget;
 
-        // 针对 Surge 的特殊处理：添加版本参数
-        if (apiTarget === 'surge') {
-            apiUrl.searchParams.set('ver', '4');
-        }
+            // Sublink Worker 的 config 参数：传入订阅 URL
+            apiUrl.searchParams.set('config', subscriptionUrl);
 
-        apiUrl.searchParams.set('url', subscriptionUrl); // 这里传递的是 Sub-One 的回调链接
-        apiUrl.searchParams.set('filename', filename);
-        apiUrl.searchParams.set('emoji', 'true');
-
-        console.log(
-            `Calling external converter API: ${apiUrl.origin}${apiUrl.pathname}?target=${targetFormat}...`
-        );
-
-        const response = await fetch(apiUrl.toString(), {
-            method: 'GET',
-            headers: {
-                'User-Agent': GLOBAL_USER_AGENT
-            }
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-                `外部转换API返回错误 (${response.status}): ${errorText.substring(0, 100)}`
+            console.log(
+                `Calling Sublink Worker API: ${apiUrl.toString()}`
             );
-        }
 
-        return await response.text();
+            const response = await fetch(apiUrl.toString(), {
+                method: 'GET',
+                headers: { 'User-Agent': GLOBAL_USER_AGENT }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    `Sublink Worker 返回错误 (${response.status}): ${errorText.substring(0, 100)}`
+                );
+            }
+
+            return await response.text();
+        } else {
+            // ===== Subconverter 模式 (原有逻辑) =====
+            const apiUrl = new URL(finalApiUrl);
+
+            if (apiUrl.pathname === '/' || apiUrl.pathname === '') {
+                apiUrl.pathname = '/sub';
+            }
+
+            apiUrl.searchParams.set('target', apiTarget);
+
+            if (apiTarget === 'surge') {
+                apiUrl.searchParams.set('ver', '4');
+            }
+
+            apiUrl.searchParams.set('url', subscriptionUrl);
+            apiUrl.searchParams.set('filename', filename);
+            apiUrl.searchParams.set('emoji', 'true');
+
+            console.log(
+                `Calling Subconverter API: ${apiUrl.origin}${apiUrl.pathname}?target=${targetFormat}...`
+            );
+
+            const response = await fetch(apiUrl.toString(), {
+                method: 'GET',
+                headers: { 'User-Agent': GLOBAL_USER_AGENT }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    `外部转换API返回错误 (${response.status}): ${errorText.substring(0, 100)}`
+                );
+            }
+
+            return await response.text();
+        }
     } catch (err: any) {
         if (err.message.includes('Invalid URL')) {
             throw new Error(`非法的外部API地址: "${finalApiUrl}"`);
