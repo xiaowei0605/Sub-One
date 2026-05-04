@@ -33,7 +33,7 @@ export const HTTP_REGEX = /^https?:\/\//;
  * - socks5 (SOCKS5 代理)
  */
 export const NODE_PROTOCOL_REGEX =
-    /^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|anytls|socks5|snell):\/\//;
+    /^(ss|ssr|vmess|vless|trojan|hysteria2?|hy|hy2|tuic|anytls|socks5|snell):\/\//i;
 
 // ==================== 国家/地区映射 ====================
 

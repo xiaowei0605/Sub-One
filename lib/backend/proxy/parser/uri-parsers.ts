@@ -36,10 +36,10 @@ function parseSurgePortHopping(raw: string): { port_hopping?: string; line: stri
  * 参考: https://github.com/shadowsocks/shadowsocks-org/wiki/SIP002-URI-Scheme
  */
 export function parseShadowsocks(uri: string): ProxyNode | null {
-    if (!uri.startsWith('ss://')) return null;
+    if (!uri.toLowerCase().startsWith('ss://')) return null;
 
     try {
-        let content = uri.split('ss://')[1];
+        let content = uri.split(/ss:\/\//i)[1];
         const name = uri.split('#')[1];
 
         const proxy: Partial<ProxyNode> = {
@@ -209,10 +209,10 @@ export function parseShadowsocks(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseShadowsocksR(uri: string): ProxyNode | null {
-    if (!uri.startsWith('ssr://')) return null;
+    if (!uri.toLowerCase().startsWith('ssr://')) return null;
 
     try {
-        const line = Base64.decode(uri.split('ssr://')[1]);
+        const line = Base64.decode(uri.split(/ssr:\/\//i)[1]);
 
         let splitIdx = line.indexOf(':origin');
         if (splitIdx === -1) {
@@ -276,10 +276,10 @@ export function parseShadowsocksR(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseTrojan(uri: string): ProxyNode | null {
-    if (!uri.startsWith('trojan://')) return null;
+    if (!uri.toLowerCase().startsWith('trojan://')) return null;
 
     try {
-        const line = uri.split('trojan://')[1];
+        const line = uri.split(/trojan:\/\//i)[1];
         const parsed = /^(.*?)@(.*?)(?::(\d+))?\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
@@ -339,11 +339,11 @@ export function parseTrojan(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseSOCKS5(uri: string): ProxyNode | null {
-    if (!/^(socks5|socks)(\+tls)?:\/\//.test(uri)) return null;
+    if (!/^(socks5|socks)(\+tls)?:\/\//i.test(uri)) return null;
 
     try {
         const parsed =
-            /^(socks5|socks)(\+tls)?:\/\/(?:(.*)@)?(.*?)(?::(\d+?))?(\?.*?)?(?:#(.*?))?$/.exec(uri);
+            /^(socks5|socks)(\+tls)?:\/\/(?:(.*)@)?(.*?)(?::(\d+?))?(\?.*?)?(?:#(.*?))?$/i.exec(uri);
 
         if (!parsed) return null;
 
@@ -418,10 +418,10 @@ export function parseSOCKS5(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseHTTP(uri: string): ProxyNode | null {
-    if (!/^https?:\/\//.test(uri)) return null;
+    if (!/^https?:\/\//i.test(uri)) return null;
 
     try {
-        const parsed = /^(https?):\/\/(?:(.*?):(.*?)@)?(.*?)(?::(\d+))?(\?.*?)?(?:#(.*))?$/.exec(
+        const parsed = /^(https?):\/\/(?:(.*?):(.*?)@)?(.*?)(?::(\d+))?(\?.*?)?(?:#(.*))?$/i.exec(
             uri
         );
 
@@ -462,10 +462,10 @@ export function parseHTTP(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseVMess(uri: string): ProxyNode | null {
-    if (!uri.startsWith('vmess://')) return null;
+    if (!uri.toLowerCase().startsWith('vmess://')) return null;
 
     try {
-        const line = uri.split('vmess://')[1];
+        const line = uri.split(/vmess:\/\//i)[1];
         let content = Base64.decode(line.replace(/\?.*?$/, ''));
 
         if (/=\s*vmess/.test(content)) {
@@ -656,10 +656,10 @@ function parseQuantumultVMess(content: string): ProxyNode | null {
 // ============================================================================
 
 export function parseVLESS(uri: string): ProxyNode | null {
-    if (!uri.startsWith('vless://')) return null;
+    if (!uri.toLowerCase().startsWith('vless://')) return null;
 
     try {
-        let line = uri.split('vless://')[1];
+        let line = uri.split(/vless:\/\//i)[1];
         let isShadowrocket = false;
 
         let parsed = /^(.*?)@(.*?):(\d+)\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
@@ -839,10 +839,10 @@ export function parseVLESS(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseHysteria(uri: string): ProxyNode | null {
-    if (!uri.startsWith('hysteria://')) return null;
+    if (!uri.toLowerCase().startsWith('hysteria://')) return null;
 
     try {
-        const line = uri.split('hysteria://')[1];
+        const line = uri.split(/hysteria:\/\//i)[1];
         const parsed = /^(.*?):(\d+)\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
@@ -889,10 +889,10 @@ export function parseHysteria(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseSnell(uri: string): ProxyNode | null {
-    if (!uri.startsWith('snell://')) return null;
+    if (!uri.toLowerCase().startsWith('snell://')) return null;
 
     try {
-        const line = uri.split('snell://')[1];
+        const line = uri.split(/snell:\/\//i)[1];
         const parsed = /^(.*?)@(.*?):(\d+)\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
@@ -933,10 +933,10 @@ export function parseSnell(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseAnyTLS(uri: string): ProxyNode | null {
-    if (!uri.startsWith('anytls://')) return null;
+    if (!uri.toLowerCase().startsWith('anytls://')) return null;
 
     try {
-        const line = uri.split('anytls://')[1];
+        const line = uri.split(/anytls:\/\//i)[1];
         const parsed = /^(.*?)@(.*?):(\d+)\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
@@ -1009,10 +1009,10 @@ export function parseAnyTLS(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseHysteria2(uri: string): ProxyNode | null {
-    if (!/^(hysteria2|hy2):\/\//.test(uri)) return null;
+    if (!/^(hysteria2|hy2):\/\//i.test(uri)) return null;
 
     try {
-        const rawLine = uri.split(/(hysteria2|hy2):\/\//)[2];
+        const rawLine = uri.split(/(hysteria2|hy2):\/\//i)[2];
         const { port_hopping, line: newLine } = parseSurgePortHopping(rawLine);
         const parsed =
             /^(.*?)@(.*?)(?::((\d+(-\d+)?)([,;]\d+(-\d+)?)*))?\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(
@@ -1095,10 +1095,10 @@ export function parseHysteria2(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseTUIC(uri: string): ProxyNode | null {
-    if (!uri.startsWith('tuic://')) return null;
+    if (!uri.toLowerCase().startsWith('tuic://')) return null;
 
     try {
-        const line = uri.split(/tuic:\/\//)[1];
+        const line = uri.split(/tuic:\/\//i)[1];
         const parsed = /^(.*?)@(.*?)(?::(\d+))?\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
@@ -1154,10 +1154,10 @@ export function parseTUIC(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseWireGuard(uri: string): ProxyNode | null {
-    if (!/^(wireguard|wg):\/\//.test(uri)) return null;
+    if (!/^(wireguard|wg):\/\//i.test(uri)) return null;
 
     try {
-        const line = uri.split(/(wireguard|wg):\/\//)[2];
+        const line = uri.split(/(wireguard|wg):\/\//i)[2];
         const parsed = /^((.*?)@)?(.*?)(?::(\d+))?\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
@@ -1244,10 +1244,10 @@ export function parseWireGuard(uri: string): ProxyNode | null {
 // ============================================================================
 
 export function parseNaive(uri: string): ProxyNode | null {
-    if (!uri.startsWith('naive+')) return null;
+    if (!uri.toLowerCase().startsWith('naive+')) return null;
 
     try {
-        const line = uri.split('://')[1];
+        const line = uri.split(/:\/\//i)[1];
         const parsed = /^(?:(.*?):(.*?)@)?(.*?):(\d+)\/?(?:\?([^#]*))?(?:#(.*))?$/.exec(line);
 
         if (!parsed) return null;
